@@ -91,8 +91,8 @@ int recv_request(char** result) {
 				&& ((*result)[1] == '5') 
 				&& ((*result)[2] == '0') 
 				&& ((*result)[3] == '-') 
-				&& ((*result)[i-1] == 13) 
-				&& ((*result)[i] == 10)) {
+				&& ((*result)[i-1] == '\r') 
+				&& ((*result)[i] == '\n')) {
 			is_end = 1;
 			//Check if reply fits into result
 			if (i+8 > size) {
@@ -115,8 +115,8 @@ int recv_request(char** result) {
 				&& ((*result)[1] == '5') 
 				&& ((*result)[2] == '0') 
 				&& ((*result)[3] == ' ') 
-				&& ((*result)[i-1] == 13) 
-				&& ((*result)[i] == 10)) {
+				&& ((*result)[i-1] == '\r') 
+				&& ((*result)[i] == '\n')) {
 			is_end = 1;
 		}
 		// Match on 250+... with emsequence CRLF.CRLF
@@ -125,11 +125,11 @@ int recv_request(char** result) {
 				&& ((*result)[1] == '5') 
 				&& ((*result)[2] == '0') 
 				&& ((*result)[3] == '+') 
-				&& ((*result)[i-4] == 13) 
-				&& ((*result)[i-3] == 10) 
+				&& ((*result)[i-4] == '\r') 
+				&& ((*result)[i-3] == '\n') 
 				&& ((*result)[i-2] == '.') 
-				&& ((*result)[i-1] == 13) 
-				&& ((*result)[i] == 10)) {
+				&& ((*result)[i-1] == '\r') 
+				&& ((*result)[i] == '\n')) {
 			//Check if reply fits into result
 			if (i+8 > size) {
 				size += BUFFER_SIZE;
@@ -150,8 +150,8 @@ int recv_request(char** result) {
 				&& !(((*result)[0] == '2') 
 					&& ((*result)[1] == '5') 
 					&& ((*result)[2] == '0')) 
-				&& ((*result)[i-1] == 13) 
-				&& ((*result)[i] == 10)) {
+				&& ((*result)[i-1] == '\r') 
+				&& ((*result)[i] == '\n')) {
 			is_end = 1;
 		}
 	}
