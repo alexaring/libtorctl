@@ -20,7 +20,7 @@
 #define __TORSOCKET_H__
 
 #include <unistd.h>
-#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -30,7 +30,7 @@
 int open_socket();
 int close_socket();
 int send_request(char* cmd);
-char* recv_request();
+int recv_request(char** result);
 
 #endif
 

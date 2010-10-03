@@ -16,3 +16,20 @@
  * =====================================================================================
  */
 
+#include "socket.h"
+#include "stdio.h"
+
+int main(int argc, char* argv[]) {
+	char* resstr;
+	resstr = NULL;
+	open_socket();
+	send_request("authenticate \"torika\"");
+	recv_request(&resstr);
+	printf("%s", resstr);
+	send_request("getinfo network-status");
+	recv_request(&resstr);
+	printf("%s", resstr);
+	close_socket();
+	return 0;
+}
+
