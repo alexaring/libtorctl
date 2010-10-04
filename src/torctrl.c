@@ -834,6 +834,33 @@ E_COUNTRY tctrl_ip_to_country(char* ip) {
 	return country_to_enum(country);
 }
 
+int tctrl_stream_status(Li_stream_status* li) {
+	int err;
+	//Buffer to construct commit string
+	char buf[128], *tmp;
+	//Length for password, avoid bufferoverflow
+	err = strlen(password);
+	if (err>100) {
+		return -1;
+	}
+	//Build cmd string
+	sprintf(buf, "authenticate \"%s\"", password);
+	err = send_request(buf);
+	if (err<0) {
+		return -1;
+	}
+	err = recv_request(&tmp);
+	if (err<0) {
+		return -1;
+	}
+	err = check_str_err(tmp);
+	if (err<0) {
+		return -1;
+	}
+	free(tmp);
+	return 0;
+}
+
 int main(int argc, char* argv[]) {
 	char* resstr;
 	E_COUNTRY c;
