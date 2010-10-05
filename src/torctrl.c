@@ -17,6 +17,7 @@
  */
 
 #include "socket.h"
+#include "list_stream_status.h"
 #include "torctrl.h"
 #include "stdio.h"
 
@@ -29,6 +30,7 @@ static int check_str_err(char* str) {
 	}
 	//TODO
 	//DO error handling here...
+	printf("%s\n", "Error replie.");
 	return -1;
 }
 
@@ -834,7 +836,7 @@ E_COUNTRY tctrl_ip_to_country(char* ip) {
 	return country_to_enum(country);
 }
 
-int tctrl_stream_status(Li_stream_status* li) {
+/* int tctrl_stream_status(Li_stream_status* li) {
 	int err;
 	//Buffer to construct commit string
 	char buf[128], *tmp;
@@ -859,10 +861,11 @@ int tctrl_stream_status(Li_stream_status* li) {
 	}
 	free(tmp);
 	return 0;
-}
+}*/
 
 int main(int argc, char* argv[]) {
 	char* resstr;
+	struct LiStreamStatus* li;
 	E_COUNTRY c;
 	resstr = NULL;
 	open_socket();
@@ -871,6 +874,7 @@ int main(int argc, char* argv[]) {
 	if ( c == US ) {
 		printf("%s\n", "HURRA DE");
 	}
+	list_stream_status_init(&li);
 	close_socket();
 	return 0;
 }
