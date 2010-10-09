@@ -18,6 +18,21 @@
 
 #include "list_stream_status.h"
 
+static char* copy_sub_str_trimmed(char* str, char delimeter) {
+	size_t i;
+	char* erg;
+
+	for (i=1;(str[i]!=delimeter);i++);
+	
+	erg = (char*)malloc(i+1);
+	
+	strncpy(erg, str, i);
+	
+	erg[i] = '\0';
+
+	return erg;
+}
+
 static int init_stream_status(struct StreamStatusItem** item,
 		int stream_id,
 		E_STREAM_STATUS status,
@@ -60,27 +75,110 @@ static int free_stream_status(struct StreamStatusItem** item) {
 }
 
 int list_stream_status_init(struct LiStreamStatus** li) {
-	char* recvstr;
+	char* recvstr, *tmp, *str;
 	int err;
+	E_RESPONSE_TYPE responsetype;
+	struct StreamStatusItem item;
 
 	err = send_request("getinfo stream-status");
 
 	if (err<0) {
-		printf("%s\n", "lalas");
 		return -1;
 	}
 
 	err = recv_request(&recvstr);
 
 	if (err<0) {
-		printf("%s\n", "lala");
 		free(recvstr);
 		return -1;
 	}
 
+	responsetype = get_reply_type(recvstr);
 	printf("%s\n", recvstr);
+	
+	switch (responsetype) {
+		case RESPONSE_LINE:
+			tmp = rindex(recvstr, '=')+1;
+			str = copy_sub_str_trimmed(tmp, ' ');
+		//	printf("%s\n", str);
+			item.stream_id = strtol(str, NULL, 10);
+			free(str);
+			break;
+		case RESPONSE_DATA:
+			
+			tmp = index(recvstr, '=')+3;
+			str = copy_sub_str_trimmed(tmp, ' ');
+			item.stream_id = strtol(str, NULL, 10);
+			free(str);
+			
+			tmp = index(tmp, ' ')+1;
+			str = copy_sub_str_trimmed(tmp, ' ');
+			
+			if (!strcmp(str, "NEW\0")) {
+				item.status = NEW;
+			}
+			else if (!strcmp(str, "NEWRESOLVE\0")) {
+				item.status = NEWRESOLVE;
+			}
+			else if (!strcmp(str, "REMAP\0")) {
+				item.status = REMAP;
+			}
+			else if (!strcmp(str, "SENTCONNECT\0")) {
+				item.status = SENTCONNECT;
+			}
+			else if (!strcmp(str, "SENTRESOLVE\0")) {
+				item.status = SENTRESOLVE;
+			}
+			else if (!strcmp(str, "SUCCEEDED\0")) {
+				item.status = SUCCEEDED;
+			}
+			else if (!strcmp(str, "FAILED\0")) {
+				item.status = FAILED;
+			}
+			else if (!strcmp(str, "CLOSED\0")) {
+				item.status = CLOSED;
+			}
+			else if (!strcmp(str, "DETACHED\0")) {
+				item.status = DETACHED;
+			}
+			else {
+				return -1;
+			}
+
+			free(str);
+			
+			tmp = index(tmp, ' ')+1;
+			str = copy_sub_str_trimmed(tmp , ' ');
+			item.circuit_id = strtol(str, NULL, 10);
+			free(str);
+			
+			tmp = index(tmp, ' ')+1;
+			str = copy_sub_str_trimmed(tmp, ':');
+			item.target_ip = malloc(strlen(str)+1);	
+			strcpy(item.target_ip, str);
+			free(str);
+
+			tmp = index(tmp, ':')+1;
+			str = copy_sub_str_trimmed(tmp, '\n');
+			item.target_port = malloc(strlen(str)+1);	
+			strcpy(item.target_port, str);
+			free(str);
+
+			printf("%s\n", item.target_port);
+			free(item.target_ip);
+			free(item.target_port);
+			break;
+		default:
+			break;
+	}
+
+/*  	for (err=0;err<strlen(recvstr);err++) {
+		printf("%d: %d\n", err, recvstr[err]);
+	}*/
 
 	*li = NULL;
+
+	free(recvstr);
 
 	return 0;
 }

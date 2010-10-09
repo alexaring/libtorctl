@@ -19,6 +19,13 @@
 #ifndef __TORCTRL_H__
 #define __TORCTRL_H__
 
+typedef enum {
+	RESPONSE_ERROR=-1,
+	RESPONSE_OK,
+	RESPONSE_UNKNOWN,
+	RESPONSE_LINE,
+	RESPONSE_DATA
+} E_RESPONSE_TYPE;
 
 //Fetches from http://en.wikipedia.org/wiki/ISO_3166-1
 //Collum Alpha-2 code
@@ -272,6 +279,8 @@ typedef enum {
 	COUNTRY_ERROR,
 	UNKNOWN
 } E_COUNTRY;
+
+E_RESPONSE_TYPE get_reply_type(char* str);
 
 #endif
 

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "socket.h"
+#include "torctrl.h"
 
 //See https://gitweb.torproject.org/tor.git/blob/HEAD:/doc/spec/control-spec.txt
 typedef enum {

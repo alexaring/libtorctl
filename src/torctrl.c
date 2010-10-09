@@ -23,6 +23,29 @@
 
 #define MAX_PW_LENGTH
 
+E_RESPONSE_TYPE get_reply_type(char* str) {
+	if (strlen(str)<4) {
+		return RESPONSE_ERROR;
+	}
+	//Check on 250... 250 is OK command, otherwise there is an error.
+	if (str[0] != '2' && str[1] != '5' && str[2]!='0' && str[3]!=' ') {
+		return RESPONSE_ERROR;
+	}
+	if (str[0] == '2' && str[1] == '5' && str[2]=='0' && str[3]==' ') {
+		return RESPONSE_OK;
+	}
+	if (str[0] == '2' && str[1] == '5' && str[2]=='0' && str[3]=='+') {
+		return RESPONSE_DATA;
+	}
+	if (str[0] == '2' && str[1] == '5' && str[2]=='0' && str[3]=='-') {
+		return RESPONSE_LINE;
+	}
+	//TODO
+	//DO error handling here...
+	printf("%s\n", "Error replie.");
+	return RESPONSE_UNKNOWN;
+}
+
 static int check_str_err(char* str) {
 	//Check on 250... 250 is OK command, otherwise there is an error.
 	if (str[0] == '2' && str[1] == '5' && str[2]=='0') {
