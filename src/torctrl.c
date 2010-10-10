@@ -898,6 +898,8 @@ int main(int argc, char* argv[]) {
 		printf("%s\n", "HURRA DE");
 	}
 	list_stream_status_init(&li);
+	printf("%s\n", li->s->target_ip);
+	list_stream_status_free(&li);
 	close_socket();
 	return 0;
 }

@@ -51,14 +51,14 @@ static int init_stream_status(struct StreamStatusItem** item,
 	(*item)->circuit_id = circuit_id;
 	(*item)->target_ip = malloc(strlen(target_ip)+1);
 
-	if ((*item)->target_ip == NULL) {
+	if (!(*item)->target_ip) {
 		return 0;
 	}
 
 	strcpy((*item)->target_ip, target_ip); 
 	(*item)->target_port = malloc(strlen(target_port)+1);
 
-	if ((*item)->target_port == NULL) {
+	if (!(*item)->target_port) {
 		return 0;
 	}
 
@@ -69,6 +69,10 @@ static int init_stream_status(struct StreamStatusItem** item,
 
 
 static int free_stream_status(struct StreamStatusItem** item) {
+	if (!*item) {
+		return -1;
+	}
+
 	free(*item);
 
 	return 0;
@@ -93,6 +97,8 @@ int list_stream_status_init(struct LiStreamStatus** li) {
 		return -1;
 	}
 
+	*li = NULL;
+
 	responsetype = get_reply_type(recvstr);
 	printf("%s\n", recvstr);
 	
@@ -107,76 +113,90 @@ int list_stream_status_init(struct LiStreamStatus** li) {
 		case RESPONSE_DATA:
 			
 			tmp = index(recvstr, '=')+3;
-			str = copy_sub_str_trimmed(tmp, ' ');
-			item.stream_id = strtol(str, NULL, 10);
-			free(str);
-			
-			tmp = index(tmp, ' ')+1;
-			str = copy_sub_str_trimmed(tmp, ' ');
-			
-			if (!strcmp(str, "NEW\0")) {
-				item.status = NEW;
-			}
-			else if (!strcmp(str, "NEWRESOLVE\0")) {
-				item.status = NEWRESOLVE;
-			}
-			else if (!strcmp(str, "REMAP\0")) {
-				item.status = REMAP;
-			}
-			else if (!strcmp(str, "SENTCONNECT\0")) {
-				item.status = SENTCONNECT;
-			}
-			else if (!strcmp(str, "SENTRESOLVE\0")) {
-				item.status = SENTRESOLVE;
-			}
-			else if (!strcmp(str, "SUCCEEDED\0")) {
-				item.status = SUCCEEDED;
-			}
-			else if (!strcmp(str, "FAILED\0")) {
-				item.status = FAILED;
-			}
-			else if (!strcmp(str, "CLOSED\0")) {
-				item.status = CLOSED;
-			}
-			else if (!strcmp(str, "DETACHED\0")) {
-				item.status = DETACHED;
-			}
-			else {
-				return -1;
+
+			while ((tmp[0]!='\r') 
+					&& (tmp[1]!='\n') 
+					&& (tmp[2]!='.') 
+					&& (tmp[3]!='\r') 
+					&& (tmp[4]!='\n')) {
+				str = copy_sub_str_trimmed(tmp, ' ');
+				item.stream_id = strtol(str, NULL, 10);
+				free(str);
+
+				tmp = index(tmp, ' ')+1;
+				str = copy_sub_str_trimmed(tmp, ' ');
+
+				if (!strcmp(str, "NEW\0")) {
+					item.status = NEW;
+				}
+				else if (!strcmp(str, "NEWRESOLVE\0")) {
+					item.status = NEWRESOLVE;
+				}
+				else if (!strcmp(str, "REMAP\0")) {
+					item.status = REMAP;
+				}
+				else if (!strcmp(str, "SENTCONNECT\0")) {
+					item.status = SENTCONNECT;
+				}
+				else if (!strcmp(str, "SENTRESOLVE\0")) {
+					item.status = SENTRESOLVE;
+				}
+				else if (!strcmp(str, "SUCCEEDED\0")) {
+					item.status = SUCCEEDED;
+				}
+				else if (!strcmp(str, "FAILED\0")) {
+					item.status = FAILED;
+				}
+				else if (!strcmp(str, "CLOSED\0")) {
+					item.status = CLOSED;
+				}
+				else if (!strcmp(str, "DETACHED\0")) {
+					item.status = DETACHED;
+				}
+				else {
+					return -1;
+				}
+
+				free(str);
+
+				tmp = index(tmp, ' ')+1;
+				str = copy_sub_str_trimmed(tmp , ' ');
+				item.circuit_id = strtol(str, NULL, 10);
+				free(str);
+
+				tmp = index(tmp, ' ')+1;
+				str = copy_sub_str_trimmed(tmp, ':');
+				item.target_ip = malloc(strlen(str)+1);	
+				strcpy(item.target_ip, str);
+				free(str);
+
+				tmp = index(tmp, ':')+1;
+				str = copy_sub_str_trimmed(tmp, '\n');
+				item.target_port = malloc(strlen(str)+1);	
+				strcpy(item.target_port, str);
+				free(str);
+
+				add_to_list(li, 
+						item.stream_id,
+						item.status,
+						item.circuit_id,
+						item.target_ip,
+						item.target_port);
+
+				free(item.target_ip);
+				free(item.target_port);
+				tmp = index(tmp, '\n')+1;
 			}
 
-			free(str);
-			
-			tmp = index(tmp, ' ')+1;
-			str = copy_sub_str_trimmed(tmp , ' ');
-			item.circuit_id = strtol(str, NULL, 10);
-			free(str);
-			
-			tmp = index(tmp, ' ')+1;
-			str = copy_sub_str_trimmed(tmp, ':');
-			item.target_ip = malloc(strlen(str)+1);	
-			strcpy(item.target_ip, str);
-			free(str);
-
-			tmp = index(tmp, ':')+1;
-			str = copy_sub_str_trimmed(tmp, '\n');
-			item.target_port = malloc(strlen(str)+1);	
-			strcpy(item.target_port, str);
-			free(str);
-
-			printf("%s\n", item.target_port);
-			free(item.target_ip);
-			free(item.target_port);
 			break;
 		default:
 			break;
 	}
 
-/*  	for (err=0;err<strlen(recvstr);err++) {
-		printf("%d: %d\n", err, recvstr[err]);
-	}*/
+	/*  	for (err=0;err<strlen(recvstr);err++) {
+			printf("%d: %d\n", err, recvstr[err]);
+			}*/
 
-	*li = NULL;
 
 	free(recvstr);
 
@@ -208,7 +228,7 @@ int list_stream_status_free(struct LiStreamStatus** li) {
 	return 0;
 }
 
-static int add_to_list(struct LiStreamStatus* li,
+static int add_to_list(struct LiStreamStatus** li,
 		int stream_id,
 		E_STREAM_STATUS status,
 		int circuit_id,
@@ -216,14 +236,14 @@ static int add_to_list(struct LiStreamStatus* li,
 		char* target_port) {
 	int err;
 
-	if (li == NULL) {
-		li = malloc(sizeof(struct LiStreamStatus));
-		
-		if (!li) {
+	if (!*li) {
+		*li = malloc(sizeof(struct LiStreamStatus));
+
+		if (!*li) {
 			return -1;
 		}
 
-		err = init_stream_status(&(li->s),
+		err = init_stream_status(&((*li)->s),
 				stream_id,
 				status,
 				circuit_id,
@@ -234,34 +254,16 @@ static int add_to_list(struct LiStreamStatus* li,
 			return -1;
 		}
 
-		li->next = NULL;
+		(*li)->next = NULL;
 		return 0;
 	}
 
-	if (li->next == NULL) {
-		li->next = malloc(sizeof(struct LiStreamStatus));
-		
-		if (!li->next) {
-			return -1;
-		}
-
-		err = init_stream_status(&(li->next->s),
-				stream_id,
-				status,
-				circuit_id,
-				target_ip,
-				target_port);
-
-		if(err<0) {
-			return -1;
-		}
-
-		li->next->next = NULL;
-
-		return 0;
-	}
-
-	err = add_to_list(li->next, stream_id, status, circuit_id, target_ip, target_port);
+	err = add_to_list(&((*li)->next), 
+			stream_id, 
+			status, 
+			circuit_id, 
+			target_ip, 
+			target_port);
 
 	if (err<0) {
 		return -1;

@@ -62,7 +62,7 @@ static int init_stream_status(struct StreamStatusItem** item,
 
 static int free_stream_status(struct StreamStatusItem** item);
 
-static int add_to_list(struct LiStreamStatus* li,
+static int add_to_list(struct LiStreamStatus** li,
 		int stream_id,
 		E_STREAM_STATUS status,
 		int circuit_id,
