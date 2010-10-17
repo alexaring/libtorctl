@@ -101,17 +101,80 @@ int list_stream_status_init(struct LiStreamStatus** li) {
 
 	responsetype = get_reply_type(recvstr);
 	printf("%s\n", recvstr);
-	
+
 	switch (responsetype) {
 		case RESPONSE_LINE:
 			tmp = rindex(recvstr, '=')+1;
+
 			str = copy_sub_str_trimmed(tmp, ' ');
-		//	printf("%s\n", str);
 			item.stream_id = strtol(str, NULL, 10);
 			free(str);
+
+			tmp = index(tmp, ' ')+1;
+			str = copy_sub_str_trimmed(tmp, ' ');
+
+			if (!strcmp(str, "NEW\0")) {
+				item.status = NEW;
+			}
+			else if (!strcmp(str, "NEWRESOLVE\0")) {
+				item.status = NEWRESOLVE;
+			}
+			else if (!strcmp(str, "REMAP\0")) {
+				item.status = REMAP;
+			}
+			else if (!strcmp(str, "SENTCONNECT\0")) {
+				item.status = SENTCONNECT;
+			}
+			else if (!strcmp(str, "SENTRESOLVE\0")) {
+				item.status = SENTRESOLVE;
+			}
+			else if (!strcmp(str, "SUCCEEDED\0")) {
+				item.status = SUCCEEDED;
+			}
+			else if (!strcmp(str, "FAILED\0")) {
+				item.status = FAILED;
+			}
+			else if (!strcmp(str, "CLOSED\0")) {
+				item.status = CLOSED;
+			}
+			else if (!strcmp(str, "DETACHED\0")) {
+				item.status = DETACHED;
+			}
+			else {
+				return -1;
+			}
+
+			free(str);
+
+			tmp = index(tmp, ' ')+1;
+			str = copy_sub_str_trimmed(tmp , ' ');
+			item.circuit_id = strtol(str, NULL, 10);
+			free(str);
+
+			tmp = index(tmp, ' ')+1;
+			str = copy_sub_str_trimmed(tmp, ':');
+			item.target_ip = malloc(strlen(str)+1);	
+			strcpy(item.target_ip, str);
+			free(str);
+
+			tmp = index(tmp, ':')+1;
+			str = copy_sub_str_trimmed(tmp, '\n');
+			item.target_port = malloc(strlen(str)+1);	
+			strcpy(item.target_port, str);
+			free(str);
+
+			add_to_list(li, 
+					item.stream_id,
+					item.status,
+					item.circuit_id,
+					item.target_ip,
+					item.target_port);
+
+			free(item.target_ip);
+			free(item.target_port);
 			break;
 		case RESPONSE_DATA:
-			
+
 			tmp = index(recvstr, '=')+3;
 
 			while ((tmp[0]!='\r') 
@@ -187,16 +250,10 @@ int list_stream_status_init(struct LiStreamStatus** li) {
 				free(item.target_port);
 				tmp = index(tmp, '\n')+1;
 			}
-
 			break;
 		default:
 			break;
 	}
-
-	/*  	for (err=0;err<strlen(recvstr);err++) {
-			printf("%d: %d\n", err, recvstr[err]);
-			}*/
-
 
 	free(recvstr);
 
