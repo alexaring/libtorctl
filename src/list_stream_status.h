@@ -37,6 +37,13 @@ typedef enum {
 	DETACHED
 } E_STREAM_STATUS;
 
+typedef enum {
+	NOT_FOUND,
+	LI_ERROR,
+	ITEM_ERROR,
+	ITEM_FOUND
+} E_STREAM_LI_ERROR;
+
 //struct for StreamID SP StreamStatus SP CircID SP Target
 struct StreamStatusItem;
 struct StreamStatusItem {

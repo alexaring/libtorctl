@@ -329,3 +329,15 @@ static int add_to_list(struct LiStreamStatus** li,
 	return 0;
 }
 
+E_STREAM_LI_ERROR get_item(struct StreamStatusItem* item, struct LiStreamStatus* li, int i) {
+	if (!item) {
+		return LI_ERROR;
+	}
+
+	if (i==0) {
+		item = li->s;
+		return ITEM_FOUND;
+	}
+
+	get_item(item, li->next, i-1);
+}
