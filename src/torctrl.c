@@ -53,34 +53,43 @@ static int check_str_err(char* str) {
 	}
 	//TODO
 	//DO error handling here...
-	printf("%s\n", "Error replie.");
+	printf("%s\n", "Error!.");
 	return -1;
 }
 
 int tctrl_authenticate(char* password) {
 	int err;
+	size_t strlength;
 	//Buffer to construct commit string
 	char buf[128], *tmp;
+
 	//Length for password, avoid bufferoverflow
-	err = strlen(password);
-	if (err>100) {
+	strlength = strlen(password);
+
+	if (strlength>100) {
 		return -1;
 	}
+
 	//Build cmd string
 	sprintf(buf, "authenticate \"%s\"", password);
 	err = send_request(buf);
+
 	if (err<0) {
 		return -1;
 	}
 	err = recv_request(&tmp);
+
 	if (err<0) {
 		return -1;
 	}
 	err = check_str_err(tmp);
+
 	if (err<0) {
 		return -1;
 	}
+
 	free(tmp);
+
 	return 0;
 }
 
@@ -891,14 +900,14 @@ int main(int argc, char* argv[]) {
 	struct LiStreamStatus* li;
 	E_COUNTRY c;
 	resstr = NULL;
-	open_socket();
+	open_socket("127.0.0.1", 9051);
 	tctrl_authenticate("torika");
 	c = tctrl_ip_to_country("98.236.50.49");
 	if ( c == US ) {
 		printf("%s\n", "HURRA DE");
 	}
 	list_stream_status_init(&li);
-	printf("%s\n", li->s->target_ip);
+	printf("%s\n", li->next->s->target_ip);
 	list_stream_status_free(&li);
 	close_socket();
 	return 0;

@@ -27,7 +27,7 @@
 #include <arpa/inet.h>
 #include <sys/stat.h>
 
-int open_socket();
+int open_socket(char* server, unsigned short port);
 int close_socket();
 int send_request(char* cmd);
 int recv_request(char** result);

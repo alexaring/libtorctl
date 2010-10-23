@@ -23,20 +23,31 @@
 
 static int s;
 
-int open_socket() {
+int open_socket(char* server, unsigned short port) {
 	struct sockaddr_in remote;
+	size_t strlength;
 	int err;
+	
+	//Avoid Bufferoverflow
+	strlength = strlen(server);
+	if (strlength>16) {
+		return -1;
+	}
+
 	s = socket(AF_INET, SOCK_STREAM, 0);
 	if (s<0) {
 		return -1;
 	}
+
 	remote.sin_family = AF_INET;
-	remote.sin_port = htons(9051);
-	remote.sin_addr.s_addr = inet_addr("127.0.0.1");
+	remote.sin_port = htons(port);
+	remote.sin_addr.s_addr = inet_addr(server);
+	
 	err = connect(s, (struct sockaddr*)&remote, sizeof(struct sockaddr_in));
     if (err<0) {
 		return -1;
     }
+	
 	return 0;
 }
 
